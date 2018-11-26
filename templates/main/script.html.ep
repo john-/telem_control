@@ -1,0 +1,185 @@
+console.log("Data Gather code running");
+
+var dgather_ws = new WebSocket('<%= url_for('output')->to_abs %>');
+var dgather_audio = '<%= url_for('audio')->to_abs %>';
+
+setInterval(function () {
+        dgather_ws.send(JSON.stringify( { type: "ping" } ));
+        }, 45000
+);
+
+var dgather_config;
+dgather_ws.onmessage = function (event) {
+    var msg = $.parseJSON(event.data);
+
+    switch (msg.type) {
+        case 'audio':
+            msg.url = dgather_audio;
+            enqueue(msg);
+            break;
+//        case 'update':
+//            dgather_page();
+//            break;
+        case 'config':
+            dgather_config = msg;
+            //console.log('got the config: ' + dgather_config.inputs.speed.type);
+            break;
+    }
+
+};
+
+dgather_ws.onerror = function (event) {
+    console.log('websocket error: ' + event.data);
+};
+
+//function injectStyles(rule) {
+//  var div = $("<div />", {
+//    html: '&shy;<style>' + rule + '</style>'
+//  }).appendTo("body");
+//}
+
+//injectStyles('.position_improve.ui-btn.ui-btn-icon-right.ui-icon-carat-r { background-color: green; }');
+//injectStyles('.position_deprove.ui-btn.ui-btn-icon-right.ui-icon-carat-r { background-color: red; }');
+//injectStyles('.status_pit.ui-btn.ui-btn-icon-right.ui-icon-carat-r { background-color: orange; }');
+
+//injectStyles = null;
+
+var dgather_detail_ws;
+
+misc_page = function () {
+
+    // TODO: this is pretty convoluted and better way should be found
+    //       Actually, there might not be a need for this.  To be verified. (TODO)
+    var active_id = $("#switcher").tabs("option", "active");
+    active = $("#switcher ul>li a").eq(active_id).attr('href');
+
+    if (active != '#misc') {
+        console.log('Execute data gather cleanup');
+        dgather_detail_ws.send(JSON.stringify( { type: "close" } ));
+        //dgather_detail_ws.close();
+        return
+    }
+
+    console.log("Populating data gather page");
+
+    // $('#misc').empty();   // probably need to empty this when leaving the page or don't bother starting over
+    $('#misc').empty().append('<div class="ui-grid-c" id="readings"</div>');
+
+        $('<div class="ui-block-a">').append(
+            $('<div>', {
+                class: 'ui-bar ui-bar-a',
+                text: 'Input',
+        })).appendTo('#readings');
+
+        $('<div class="ui-block-b">').append(
+            $('<div>', {
+                class: 'ui-bar ui-bar-a',
+                text: 'Now',
+        })).appendTo('#readings');
+
+        $('<div class="ui-block-c">').append(
+            $('<div>', {
+                class: 'ui-bar ui-bar-a',
+                text: 'Minimum',
+        })).appendTo('#readings');
+
+        $('<div class="ui-block-d">').append(
+            $('<div>', {
+                class: 'ui-bar ui-bar-a',
+                text: 'Maximum',
+        })).appendTo('#readings');
+
+
+
+    $.each(dgather_config, function(key, val) {
+        //$('#misc').append('<p>' + key + '</p>');
+
+        $('<div class="ui-block-a">').append(
+            $('<div>', {
+                class: 'ui-bar ui-bar-a',
+                text: key,
+        })).appendTo('#readings');
+
+        $('<div class="ui-block-b">').append(
+            $('<div>', {
+                class: 'ui-bar ui-bar-a',
+                text: 'value',
+                id: key + '_val',
+        })).appendTo('#readings');
+
+        $('<div class="ui-block-c">').append(
+            $('<div>', {
+                class: 'ui-bar ui-bar-a',
+                text: 'min',
+                id: key + '_min',
+        })).appendTo('#readings');
+
+        $('<div class="ui-block-d">').append(
+            $('<div>', {
+                class: 'ui-bar ui-bar-a',
+                text: 'max',
+                id: key + '_max',
+        })).appendTo('#readings');
+    });
+
+    dgather_detail_ws = new WebSocket('<%= url_for('output_detail')->to_abs %>');
+
+    dgather_detail_ws.onmessage = function (event) {
+        var msg = $.parseJSON(event.data);
+
+        var measures = Object.keys(msg)[0];
+        $('#' + measures).text(msg[measures]);
+    }
+
+};
+
+misc_config = function() {
+
+    // approach from: http://stackoverflow.com/questions/16015810/jquery-mobile-best-way-to-create-pop-up-and-content-dynamically
+
+    var $config = $("<div/>").popup({
+        theme : "a",
+        overlyaTheme : "a",
+        transition : "pop"
+    }).on("popupafterclose", function() {
+        //remove the popup when closing
+        $(this).remove();
+    });
+
+    $("<h2/>", {
+        text : "Data Gather Configuration"
+    }).appendTo($config);
+
+    //Create a submit button(fake)
+    $("<a>", {
+        text : "OK"
+    }).buttonMarkup({
+        inline : true,
+        icon : "check"
+    }).bind("click", function() {
+        $config.popup("close");
+        check_for_dgather_changes();
+        //that.subscribeToAsset(callback);
+    }).appendTo($config);
+
+    //create a back button
+    $("<a>", {
+        text : "Cancel",
+    }).buttonMarkup({
+        inline : true,
+        icon : "back"
+    }).bind('click', function() {
+        $config.popup('close');
+    }).appendTo($config);
+
+    $config.popup("open").trigger("create");
+};
+
+check_for_dgather_changes = function() {
+
+//    if ( $('#rate').val() != lboard_config.rate ) {
+//        lboard_ws.send(JSON.stringify( { type: "set_rate", rate: $('#rate').val() } ));             }
+//    if ( $('#lboards').val() != lboard_config.series ) {
+//        lboard_ws.send(JSON.stringify( { type: "set_series", series: $('#lboards').val() } ));    }
+
+};
