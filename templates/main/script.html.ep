@@ -8,7 +8,6 @@ setInterval(function () {
         }, 45000
 );
 
-var dgather_config;
 dgather_ws.onmessage = function (event) {
     var msg = $.parseJSON(event.data);
 
@@ -20,10 +19,6 @@ dgather_ws.onmessage = function (event) {
 //        case 'update':
 //            dgather_page();
 //            break;
-        case 'config':
-            dgather_config = msg;
-            //console.log('got the config: ' + dgather_config.inputs.speed.type);
-            break;
     }
 
 };
@@ -62,6 +57,25 @@ misc_page = function () {
 
     console.log("Populating data gather page");
 
+    dgather_detail_ws = new WebSocket('<%= url_for('output_detail')->to_abs %>');
+
+    dgather_detail_ws.onmessage = function (event) {
+        var msg = $.parseJSON(event.data);
+
+        if (msg.type == 'minmax') {
+            delete msg.type;
+            render_grid(msg);
+            //console.log('got the minmax: ' + JSON.stringify(msg));
+        } else {
+            var measures = Object.keys(msg)[0];
+            $('#' + measures).text(msg[measures]);
+        }
+    }
+
+};
+
+render_grid = function(minmax) {
+
     // $('#misc').empty();   // probably need to empty this when leaving the page or don't bother starting over
     $('#misc').empty().append('<div class="ui-grid-c" id="readings"</div>');
 
@@ -89,49 +103,39 @@ misc_page = function () {
                 text: 'Maximum',
         })).appendTo('#readings');
 
-
-
-    $.each(dgather_config, function(key, val) {
+    $.each(minmax, function(input, readings) {
         //$('#misc').append('<p>' + key + '</p>');
 
+        //console.log('input: ' + inout);
         $('<div class="ui-block-a">').append(
             $('<div>', {
                 class: 'ui-bar ui-bar-a',
-                text: key,
+                text: input,
         })).appendTo('#readings');
 
         $('<div class="ui-block-b">').append(
             $('<div>', {
                 class: 'ui-bar ui-bar-a',
-                text: 'value',
-                id: key + '_val',
+                text: readings['val'],
+                id: input + '_val',
         })).appendTo('#readings');
 
         $('<div class="ui-block-c">').append(
             $('<div>', {
                 class: 'ui-bar ui-bar-a',
-                text: 'min',
-                id: key + '_min',
+                text: readings['min'],
+                id: input + '_min',
         })).appendTo('#readings');
 
         $('<div class="ui-block-d">').append(
             $('<div>', {
                 class: 'ui-bar ui-bar-a',
-                text: 'max',
-                id: key + '_max',
+                text: readings['max'],
+                id: input + '_max',
         })).appendTo('#readings');
     });
-
-    dgather_detail_ws = new WebSocket('<%= url_for('output_detail')->to_abs %>');
-
-    dgather_detail_ws.onmessage = function (event) {
-        var msg = $.parseJSON(event.data);
-
-        var measures = Object.keys(msg)[0];
-        $('#' + measures).text(msg[measures]);
-    }
-
 };
+
 
 misc_config = function() {
 

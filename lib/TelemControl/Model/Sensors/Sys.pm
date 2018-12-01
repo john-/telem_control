@@ -8,7 +8,8 @@ use Data::Dumper;
 sub initialize {
     my $self = shift;
 
-    $self->log->debug(sprintf('nothing to initialize for %s', $self->node->{name}));
+    $self->log->debug(
+        sprintf( 'nothing to initialize for %s', $self->node->{name} ) );
 
     $self->SUPER::initialize();
 }
