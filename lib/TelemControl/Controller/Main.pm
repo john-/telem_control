@@ -23,6 +23,8 @@ sub output {
 
     $c->inactivity_timeout(60);
 
+    my $me = $$;
+
     my $cb = $c->pg->pubsub->listen(
         sensor_msg => sub {
             my ( $pubsub, $payload ) = @_;
@@ -45,8 +47,10 @@ sub output {
         finish => sub {
             my ( $c, $code, $reason ) = @_;
 
-            # $c->pg->pubsub->unlisten( sensor_msg => $cb ) or
-            # 	$c->app->log->error('could not unlisten');
+	    return unless $$ == $me;
+
+	    $c->pg->pubsub->unlisten( sensor_msg => $cb ) or
+                $c->app->log->error('could not unlisten');
             $c->app->log->debug(
                 "WebSocket for details closed in output handler($code)");
         }
@@ -58,6 +62,8 @@ sub output_detail {
     my $c = shift;
 
     $c->inactivity_timeout(60);
+
+    my $me = $$;
 
     $c->send( { json => $c->minmax_msg } );
 
@@ -85,8 +91,10 @@ sub output_detail {
         finish => sub {
             my ( $c, $code, $reason ) = @_;
 
-            # $c->pg->pubsub->unlisten( sensor_detail_msg => $cb )
-            #   or $c->app->log->error('could not unlisten');
+	    return unless $$ == $me;
+
+             $c->pg->pubsub->unlisten( sensor_detail_msg => $cb )
+                 or $c->app->log->error('could not unlisten');
             $c->app->log->debug(
                 "WebSocket for details closed in output_detail handler ($code)"
             );

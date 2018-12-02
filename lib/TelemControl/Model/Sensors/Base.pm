@@ -122,6 +122,17 @@ sub announce {
         $self->speak(
             sprintf( $self->node->{notify}{phrase}, $self->node->{val} ) );
         $self->{last_report} = $self->node->{val};
+    } elsif ( $self->new_max ) {
+        Mojo::IOLoop->timer(
+	    4 => sub {
+                $self->log->debug( sprintf( 'speed increased from %s to %s',
+					    $self->{last_report}, $self->node->{val}));
+                $self->speak(
+                    sprintf( $self->node->{notify}{phrase}, $self->node->{val} ) );
+                    $self->{last_report} = $self->node->{val};
+	        }
+        );
+
     }
 
     return $self;
@@ -132,10 +143,24 @@ sub outside_threshold {
 
     my $notify = $self->node->{notify};
 
-    if ( exists( $self->node->{val} )
-        && abs( $self->{last_report} - $self->node->{val} ) >
+    if ($notify->{threshold} !~ /\d+/) { return 0 };
+
+    if ( abs( $self->{last_report} - $self->node->{val} ) >
         $notify->{threshold} )
     {
+        return 1;
+    }
+    return 0;
+}
+
+sub new_max {
+    my $self = shift;
+
+    my $notify = $self->node->{notify};
+
+    if ($notify->{threshold} ne 'max' ) { return 0 }
+
+    if ($self->node->{val} > $self->node->{max}) {
         return 1;
     }
     return 0;
