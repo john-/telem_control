@@ -1,0 +1,16 @@
+sudo apt install postgresql-server-dev-9.6  # for DBD::Pg
+sudo apt install gpsd
+
+sudo cp support/telem_control.service /etc/systemd/system
+# change user in service file that application will run under
+
+I needed to comment this out from /lib/systemd/system/gpsd.socket:
+#ListenStream=[::1]:2947
+
+Alternately, that line will probably be fine if I didn't disable ipv6.
+
+cpanm --sudo --installdeps .
+
+Local changes to I2C modules:
+
+https://github.com/john-/cart_console/wiki/Arch-on-cart#modifications

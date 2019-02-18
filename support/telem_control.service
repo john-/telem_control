@@ -4,7 +4,8 @@
     After=postgresql.service gpsd.service
 
 [Service]
-    ExecStart=/home/pub/telem_control/script/telem_control daemon --listen "http://*:3002"
+    User=<run as this user>
+    ExecStart=/cart/telem_control/script/telem_control daemon --listen "http://*:3002"
     RestartSec=30sec
     Restart=on-failure
     # attempt to make startup more robust.   maybe too soon after
