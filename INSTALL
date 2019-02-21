@@ -14,3 +14,7 @@ cpanm --sudo --installdeps .
 Local changes to I2C modules:
 
 https://github.com/john-/cart_console/wiki/Arch-on-cart#modifications
+
+# directory for gps files
+mkdir /cart/data/gps
+# move archive files from previous host

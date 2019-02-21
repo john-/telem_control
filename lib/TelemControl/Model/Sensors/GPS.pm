@@ -4,7 +4,6 @@ use parent TelemControl::Model::Sensors::Base;
 use strict;
 use warnings;
 
-use FindBin qw($Bin);
 use Mojo::JSON qw(decode_json);
 
 sub init {
@@ -16,8 +15,8 @@ sub init {
 
     my @time     = localtime;
     my $gps_file = sprintf(
-	'%s/../data/%04d%02d%02d-%d.gps',
-	$Bin,
+	'%s/%04d%02d%02d-%d.gps',
+        $self->node->{device}{dir},
 	$time[5] + 1900,
 	$time[4] + 1,
 	$time[3], $$
