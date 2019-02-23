@@ -14,6 +14,9 @@ Local changes to I2C modules:
 
 https://github.com/john-/cart_console/wiki/Arch-on-cart#modifications
 
+# this may be needed to access I2C bus:
+sudo usermod -a -G i2c <user>
+
 # directory for gps files
 mkdir /cart/data/gps
 # move archive files from previous host
