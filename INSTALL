@@ -1,8 +1,7 @@
 sudo apt install postgresql-server-dev-9.6  # for DBD::Pg
 sudo apt install gpsd
 
-sudo cp support/telem_control.service /etc/systemd/system
-# change user in service file that application will run under
+sudo cp support/telem_control@.service /etc/systemd/system
 
 I needed to comment this out from /lib/systemd/system/gpsd.socket:
 #ListenStream=[::1]:2947
@@ -18,3 +17,6 @@ https://github.com/john-/cart_console/wiki/Arch-on-cart#modifications
 # directory for gps files
 mkdir /cart/data/gps
 # move archive files from previous host
+
+sudo systemctl start telem_control@<user>.service
+sudo systemctl enable telem_control@<user>.service
