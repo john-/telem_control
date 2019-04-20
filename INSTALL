@@ -1,5 +1,6 @@
 sudo apt install postgresql-server-dev-9.6  # for DBD::Pg
 sudo apt install gpsd
+sudo apt install i2c-tools  # not required by telem_control but good for debugging
 
 sudo cp support/telem_control@.service /etc/systemd/system
 
