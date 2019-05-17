@@ -19,6 +19,7 @@ sub startup {
     $self->secrets( $self->config('secrets') );
 
     # Logging
+    $self->app->log->level($config->{loglevel});
     $self->helper( log => sub { return $self->app->log } );
 
     $self->plugin('Mojolicious::Plugin::CORS');
