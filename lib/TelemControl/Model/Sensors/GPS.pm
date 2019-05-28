@@ -44,6 +44,11 @@ sub init {
 			    $self->node->{raw} = $sentence->{speed};
 
 			    print $gps_fh $line;
+
+			    # publish lat/long for Weather.pm
+			    $self->pg->pubsub->notify(
+				location_msg => encode_json( { lat => $sentence->{lat},
+                                                               lon => $sentence->{lon} } ) );
 			}
 		    }
 

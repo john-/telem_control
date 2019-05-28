@@ -10,6 +10,7 @@ has 'config';    # for volume
 use TelemControl::Model::Sensors::I2C;
 use TelemControl::Model::Sensors::Sys;
 use TelemControl::Model::Sensors::GPS;
+use TelemControl::Model::Sensors::Weather;
 
 use Data::Dumper;
 
