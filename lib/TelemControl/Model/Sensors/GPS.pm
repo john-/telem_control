@@ -4,7 +4,7 @@ use parent TelemControl::Model::Sensors::Base;
 use strict;
 use warnings;
 
-use Mojo::JSON qw(decode_json);
+use Mojo::JSON qw(decode_json encode_json);
 
 sub init {
     my $self = shift;

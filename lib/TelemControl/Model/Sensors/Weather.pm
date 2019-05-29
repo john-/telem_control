@@ -21,7 +21,10 @@ sub init {
 
     $self->pg->pubsub->listen(location_msg => sub {
 	my ($pubsub, $payload) = @_;
-	$self->log->debug('location: ' . Dumper($payload));
+	my $loc = decode_json($payload);
+	$self->node->{device}{lon} = $loc->{lon};
+	$self->node->{device}{lat} = $loc->{lat};
+	$self->log->debug('location: ' . Dumper($loc));
     });
     
     $self->SUPER::init();
