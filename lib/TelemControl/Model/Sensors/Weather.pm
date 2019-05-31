@@ -22,9 +22,9 @@ sub init {
     $self->pg->pubsub->listen(location_msg => sub {
 	my ($pubsub, $payload) = @_;
 	my $loc = decode_json($payload);
-	$self->node->{device}{lon} = $loc->{lon};
-	$self->node->{device}{lat} = $loc->{lat};
-	$self->log->debug('location: ' . Dumper($loc));
+	$self->node->{device}{lat} = $loc->{lat} || $self->node->{device}{lat};
+	$self->node->{device}{lon} = $loc->{lon} || $self->node->{device}{lon};
+	$self->log->debug(sprintf('lat: %f lon: %f', $self->node->{device}{lat}, $self->node->{device}{lon}));
     });
     
     $self->SUPER::init();
@@ -52,6 +52,7 @@ sub _read {
     if ($self->node->{summary} ne $forecast->{minutely}->{summary}) {
 	$self->node->{summary} = $forecast->{minutely}->{summary};
 	$self->speak( sprintf('Weather is %s', $self->node->{summary}) );
+        $self->log->debug(sprintf('weather summary: %s', $self->node->{summary}));
     }
 
     if ( abs($self->node->{wind_speed} - $forecast->{currently}->{windSpeed}) > 3 ) {

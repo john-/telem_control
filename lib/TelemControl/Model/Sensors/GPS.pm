@@ -6,12 +6,52 @@ use warnings;
 
 use Mojo::JSON qw(decode_json encode_json);
 
+sub record {
+    my $self = shift;
+
+    # skip saving speed to DB
+
+    return $self;
+}
+
+sub announce {
+    my $self = shift;
+
+    if ( !exists( $self->node->{val} ) ) { return $self }
+
+    if ( $self->{new_max} ) {
+	# TODO:   Kill any old timer first to avoid rising speed spam?
+	$self->log->debug( sprintf( 'max is greater than last report %s > %s',
+				    $self->node->{max}, $self->{last_report}));
+	if (exists $self->node->{speed_announce_delay}) {
+	    Mojo::IOLoop->remove($self->node->{speed_announce_delay});
+	    delete $self->node->{speed_announce_delay};
+	}
+	$self->node->{speed_announce_delay} = Mojo::IOLoop->timer(
+	    4 => sub {
+		$self->log->debug( sprintf( 'speed increased from %s to %s',
+					    $self->{last_report}, $self->node->{val}));
+                $self->SUPER::record();
+		$self->speak(
+		    sprintf( $self->node->{notify}{phrase}, $self->node->{val} ) );
+
+		$self->{last_report} = $self->node->{val};
+	    }
+        );
+
+    }
+
+    return $self;
+}
+
 sub init {
     my $self = shift;
 
     $self->log->debug( sprintf( 'initialize %s', $self->node->{name} ) );
 
     $self->node->{raw} = 0;   # assume stationary to start
+
+    #$self->node->{speed_tester} = 0;   # debugging only
 
     my @time     = localtime;
     my $gps_file = sprintf(
@@ -43,12 +83,11 @@ sub init {
 			{
 			    $self->node->{raw} = $sentence->{speed};
 
-			    print $gps_fh $line;
+			    # store lat/long
+			    $self->node->{lat} = $sentence->{lat};
+			    $self->node->{lon} = $sentence->{lon};
 
-			    # publish lat/long for Weather.pm
-			    $self->pg->pubsub->notify(
-				location_msg => encode_json( { lat => $sentence->{lat},
-                                                               lon => $sentence->{lon} } ) );
+			    print $gps_fh $line;
 			}
 		    }
 
@@ -60,8 +99,24 @@ sub init {
 
 	}
     );
+
+    Mojo::IOLoop->recurring(
+	$self->node->{rate_coord} => sub {
+	    my $loop = shift;
+
+	    # send coord message for Weather.pm
+	    $self->pg->pubsub->notify(
+                location_msg => encode_json( { lat => $self->node->{lat},
+                                               lon => $self->node->{lon} } )
+            );
+
+	    #$self->read->record->publish->announce;
+	}
+    );
     
     $self->SUPER::init();
+
+    #$self->node->{min} = 0;    # speed min is always 0
 
     return $self;
 }
@@ -69,7 +124,10 @@ sub init {
 sub _read {
     my $self = shift;
 
-#    return int(rand(15));
+    #return int(rand(15));
+    #if ($self->node->{speed_tester} < 10) {
+    #   $self->node->{raw} = $self->node->{speed_tester}++;
+    #}
     return $self->node->{raw};
 }
 

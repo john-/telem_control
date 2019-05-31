@@ -92,15 +92,16 @@ sub publish {
 
     $self->notify( $self->node->{name} . '_val', $val );
 
-    #    my $input = $self->config->{inputs}{ $self->node->{name} };
-
-    if ( ( !exists $self->node->{min} ) || ( $val < $self->node->{min} ) ) {
+    if ( ( !defined $self->node->{min} ) || ( $val < $self->node->{min} ) ) {
         $self->node->{min} = $val;
         $self->notify( $self->node->{name} . '_min', $val );
     }
-    if ( ( !exists $self->node->{max} ) || ( $val > $self->node->{max} ) ) {
+    if ( ( !defined $self->node->{max} ) || ( $val > $self->node->{max} ) ) {
         $self->node->{max} = $val;
         $self->notify( $self->node->{name} . '_max', $val );
+	$self->{new_max} = 1;  # used for GPS.pm speed announcing.  maybe add to that class?
+    } else {
+	$self->{new_max} = 0;
     }
 
     return $self;
@@ -114,7 +115,7 @@ sub announce {
     if ( $self->outside_threshold ) {
         $self->log->debug(
             sprintf(
-                'publish: %s (%s)',
+                'announce: %s (%s)',
                 $self->node->{name},
                 $self->node->{val}
             )
@@ -122,17 +123,6 @@ sub announce {
         $self->speak(
             sprintf( $self->node->{notify}{phrase}, $self->node->{val} ) );
         $self->{last_report} = $self->node->{val};
-    } elsif ( $self->new_max ) {
-        Mojo::IOLoop->timer(
-	    4 => sub {
-                $self->log->debug( sprintf( 'speed increased from %s to %s',
-					    $self->{last_report}, $self->node->{val}));
-                $self->speak(
-                    sprintf( $self->node->{notify}{phrase}, $self->node->{val} ) );
-                    $self->{last_report} = $self->node->{val};
-	        }
-        );
-
     }
 
     return $self;
@@ -148,19 +138,6 @@ sub outside_threshold {
     if ( abs( $self->{last_report} - $self->node->{val} ) >
         $notify->{threshold} )
     {
-        return 1;
-    }
-    return 0;
-}
-
-sub new_max {
-    my $self = shift;
-
-    my $notify = $self->node->{notify};
-
-    if ($notify->{threshold} ne 'max' ) { return 0 }
-
-    if ($self->node->{val} > $self->node->{max}) {
         return 1;
     }
     return 0;
