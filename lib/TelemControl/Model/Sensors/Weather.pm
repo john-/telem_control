@@ -50,9 +50,9 @@ sub _read {
     }
 
     if ($self->node->{summary} ne $forecast->{minutely}->{summary}) {
+        $self->log->debug(sprintf('weather was "%s" and now is "%s"', $self->node->{summary}, $forecast->{minutely}->{summary}));
 	$self->node->{summary} = $forecast->{minutely}->{summary};
 	$self->speak( sprintf('Weather is %s', $self->node->{summary}) );
-        $self->log->debug(sprintf('weather summary: %s', $self->node->{summary}));
     }
 
     if ( abs($self->node->{wind_speed} - $forecast->{currently}->{windSpeed}) > 3 ) {
