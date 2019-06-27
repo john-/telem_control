@@ -26,16 +26,17 @@ sub announce {
 	if (exists $self->node->{speed_announce_delay}) {
 	    Mojo::IOLoop->remove($self->node->{speed_announce_delay});
 	    delete $self->node->{speed_announce_delay};
+	    $self->log->debug('killed max speed announcment as there is new max speed');
 	}
 	$self->node->{speed_announce_delay} = Mojo::IOLoop->timer(
 	    4 => sub {
-		$self->log->debug( sprintf( 'speed increased from %s to %s',
-					    $self->{last_report}, $self->node->{val}));
+		$self->log->info( sprintf( 'speed increased from %s to %s',
+					    $self->{last_report}, $self->node->{max}));
                 $self->SUPER::record();
 		$self->speak(
-		    sprintf( $self->node->{notify}{phrase}, $self->node->{val} ) );
+		    sprintf( $self->node->{notify}{phrase}, $self->node->{max} ) );
 
-		$self->{last_report} = $self->node->{val};
+		$self->{last_report} = $self->node->{max};
 	    }
         );
 
