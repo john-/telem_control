@@ -69,18 +69,25 @@ sub read {
 sub record {
     my $self = shift;
 
+    $self->update_db($self->node->{name}, $self->node->{val});
+
+    return $self;
+}
+
+sub update_db {
+    my ($self, $input, $val) = @_;
+
     $self->log->debug(
-        sprintf( 'record: %s (%s)', $self->node->{name}, $self->node->{val} ) )
-      if exists( $self->node->{val} );
+        sprintf( 'record: %s (%s)', $input, $val ) )
+      if defined( $val );
 
     $self->pg->db->query(
         'insert into sensor_history (input, value) values (?, ?)',
-        $self->node->{name},
-        $self->node->{val}
+        $input,
+        $val
       )
-      or $self->log->error("could not update the database: $self->node->{val}");
+      or $self->log->error("could not update the database: $input $val");
 
-    return $self;
 }
 
 sub publish {

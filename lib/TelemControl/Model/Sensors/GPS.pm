@@ -32,7 +32,7 @@ sub announce {
 	    4 => sub {
 		$self->log->info( sprintf( 'speed increased from %s to %s',
 					    $self->{last_report}, $self->node->{max}));
-                $self->SUPER::record();
+                $self->update_db($self->node->{name}, $self->node->{max});
 		$self->speak(
 		    sprintf( $self->node->{notify}{phrase}, $self->node->{max} ) );
 
