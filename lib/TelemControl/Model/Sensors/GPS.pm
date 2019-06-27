@@ -94,6 +94,19 @@ sub init {
 		}
             );
 
+	    $stream->on(
+		error => sub {
+		    my ($stream, $err) = @_;
+                    $self->log->error(sprintf('GPS stream error: %s', $err));
+                }
+	    );
+
+	    $stream->on(
+		timeout => sub {
+                    $self->log->error('GPS stream timed out');
+                }
+	    );
+
 	    # Write request
 	    $stream->write('?WATCH={"enable":true,"json":true}');
 

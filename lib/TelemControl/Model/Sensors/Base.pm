@@ -161,6 +161,7 @@ sub notify {
 
     $self->pg->pubsub->notify(
         sensor_detail_msg => encode_json( { $input => $val } ) );
+    #$self->log->debug( sprintf( 'notify: %s (%s)', $input, $val ) );
 
 }
 

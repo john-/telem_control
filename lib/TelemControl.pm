@@ -20,6 +20,7 @@ sub startup {
 
     # Logging
     $self->app->log->level($config->{loglevel});
+    $self->app->log->path("$Bin/../log/telem_control.log");
     $self->helper( log => sub { return $self->app->log } );
 
     $self->plugin('Mojolicious::Plugin::CORS');
