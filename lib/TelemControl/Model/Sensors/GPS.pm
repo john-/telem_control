@@ -89,7 +89,9 @@ sub init {
 			    $self->node->{lon} = $sentence->{lon};
 
 			    print $gps_fh $line;
-			}
+			} else {
+			    $self->node->{raw} = 'NO_LOCK';   # this never gets hit
+		        }
 		    }
 
 		}
@@ -104,7 +106,10 @@ sub init {
 
 	    $stream->on(
 		timeout => sub {
+		    my $stream = shift;
                     $self->log->error('GPS stream timed out');
+		    $stream->stop;
+		    $stream->start;
                 }
 	    );
 
