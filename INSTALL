@@ -18,6 +18,34 @@ https://github.com/john-/cart_console/wiki/Arch-on-cart#modifications
 # this may be needed to access I2C bus:
 sudo usermod -a -G i2c <user>
 
+# I2C bus determination
+
+If getting these errors in log and no I2C sensors working then bus i2C bus might have changed
+
+[2021-03-25 15:38:39.06127] [2764] [debug] initialize voltage
+[2021-03-25 15:38:39.07332] [2764] [error] could not access chip for voltage: Unable to open I2C Device File at Device::SMBus=HASH(0x556b3fe680)->I2CBusDevicePath at /usr/local/lib/aarch64-linux-gnu/perl/5.26.1/Device/SMBus.pm line 65.
+
+In this case, change conf to use bus 0 for the sensors:
+
+i2cdetect -l
+i2c-1   i2c             Meson I2C adapter                       I2C adapter
+i2c-0   i2c             Meson I2C adapter                       I2C adapter
+
+i2cdetect 0
+WARNING! This program can confuse your I2C bus, cause data loss and worse!
+I will probe file /dev/i2c-0.
+I will probe address range 0x03-0x77.
+Continue? [Y/n] y
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+     00:          -- -- -- -- -- -- -- -- -- -- -- -- --
+     10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+     20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- 2e --
+     30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+     40: 40 -- -- -- -- -- -- -- 48 -- -- -- -- -- -- --
+     50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+     60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+     70: -- -- -- -- -- -- -- --
+
 # directory for gps files
 mkdir /cart/data/gps
 # move archive files from previous host

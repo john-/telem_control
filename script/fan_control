@@ -1,0 +1,36 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use Device::Chip::Adapter;
+
+use Device::Chip::ADT7470;
+
+use feature 'say';
+
+my $ADAPTER     = "LinuxKernel";
+my $MOUNTPARAMS = 'bus=/dev/i2c-2,addr=0x2e';
+
+my $ina = Device::Chip::ADT7470->new;
+
+$ina->mount_from_paramstr(
+    Device::Chip::Adapter->new_from_description($ADAPTER), $MOUNTPARAMS, )->get;
+
+#use constant { FAN1 => 1,
+#               FAN2 => 2 };
+
+my @fans = ( 1, 2 );
+
+foreach my $fan ( @fans ) {
+    $ina->write_duty_percent( $fan, 20 )->get;
+}
+
+say 'sleeping to let fans simmer down';
+sleep 2;
+
+foreach my $fan ( @fans ) {
+    my $rpm = $ina->read_fan_rpm($fan)->get;
+    say "Fan$fan rpm is $rpm";
+}
+
