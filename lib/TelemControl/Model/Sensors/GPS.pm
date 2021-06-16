@@ -90,7 +90,7 @@ sub init {
 
 			    print $gps_fh $line;
 			} else {
-			    $self->node->{raw} = 'NO_LOCK';   # this never gets hit
+			    $self->node->{raw} = 'NO_VALUE';
 		        }
 		    }
 

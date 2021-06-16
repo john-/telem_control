@@ -59,9 +59,16 @@ sub _load_min_max {
 sub read {
     my $self = shift;
 
-    $self->node->{val} = $self->node->{device}{calc}->( $self->_read );
-    $self->log->debug(
-        sprintf( 'read: %s (%s)', $self->node->{name}, $self->node->{val} ) );
+    my $raw = $self->_read;
+    if ($raw ne 'NO_VALUE') {
+        $self->node->{val} = $self->node->{device}{calc}->( $raw );
+        $self->log->debug(
+            sprintf( 'read: %s (%s)', $self->node->{name}, $self->node->{val} ) );
+    } else {
+        delete($self->node->{val});
+        $self->log->debug(
+            sprintf( 'no data for: %s', $self->node->{name} ) );
+    }
 
     return $self;
 }
